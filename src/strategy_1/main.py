@@ -1,16 +1,19 @@
 import asyncio
-from common.helper import common_hello
+from sma_sample_strategy import SMAStrategy
+from superalgorithm.exchange import CCXTExchange
+from superalgorithm.data.providers.ccxt import CCXTDataSource
+from superalgorithm.utils.config import config
 
 
 async def main():
 
-    # sample code, replace with your own code:
-    called = 0
-    while True:
-        called = called + 1
-        print(f"strategy is running - {called}")
-        common_hello()
-        await asyncio.sleep(3)
+    datasource = CCXTDataSource("BTC/USDT", "5m", exchange_id="binance")
+    strategy = SMAStrategy(
+        [datasource],
+        CCXTExchange(exchange_id="binance", config={"apiKey": "", "secret": ""}),
+    )
+
+    await strategy.start()
 
 
 if __name__ == "__main__":

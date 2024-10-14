@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the common code into the image
 COPY . /app/common
+COPY csv_data /app/csv_data
 
 RUN pip install --no-cache-dir -r common/requirements.txt
 
