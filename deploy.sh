@@ -13,7 +13,7 @@ eval "$(ssh-agent -s)"
 ssh-add
 
 # Get the list of strategies (folders inside ./src excluding common)
-strategies=($(git ls-files --others --exclude-standard --directory ./src | grep -v './src/common/' | xargs -n 1 basename))
+strategies=($(find src -maxdepth 1 -type d -not -name "src" -not -name "common" -not -name "__pycache__" -not -name "*.egg-info" -exec basename {} \;))
 
 # Function to display the menu and get user selection
 select_strategy() {

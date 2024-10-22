@@ -1,7 +1,7 @@
 #!/bin/bash
 # chmod +x deploy.sh
 
-strategies=($(git ls-files --others --exclude-standard --directory ./src | grep -v './src/common/' | xargs -n 1 basename))
+strategies=($(find src -maxdepth 1 -type d -not -name "src" -not -name "common" -not -name "__pycache__" -not -name "*.egg-info" -exec basename {} \;))
 
 select_strategy() {
     echo "Select a strategy to run:"
