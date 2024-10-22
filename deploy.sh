@@ -13,7 +13,7 @@ eval "$(ssh-agent -s)"
 ssh-add
 
 # Get the list of strategies (folders inside ./src excluding common)
-strategies=($(ls -d ./src/*/ | grep -v './src/common/' | xargs -n 1 basename))
+strategies=($(git ls-files --others --exclude-standard --directory ./src | grep -v './src/common/' | xargs -n 1 basename))
 
 # Function to display the menu and get user selection
 select_strategy() {
@@ -48,9 +48,12 @@ update_strategy() {
         docker build -t common_code_image:latest . &&
         cd / && cd $REMOTE_PATH/src/$strategy &&
         docker build -t $strategy . &&
-        if [ \$(docker ps -a -q -f name=$strategy) ]; then
+
+        if [ \$(docker ps -a -q -f name=^${strategy}\$) ]; then
             docker stop $strategy &&
-            docker rm $strategy
+            docker rm $strategy 2>/dev/null || echo "Container $strategy already removed"
+        else
+            echo "No container with name $strategy found."
         fi &&
         docker run -d -it --rm --name $strategy $strategy python main.py
     "

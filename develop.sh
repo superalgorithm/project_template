@@ -1,7 +1,7 @@
 #!/bin/bash
 # chmod +x deploy.sh
 
-strategies=($(ls -d ./src/*/ | grep -v './src/common/' | xargs -n 1 basename))
+strategies=($(git ls-files --others --exclude-standard --directory ./src | grep -v './src/common/' | xargs -n 1 basename))
 
 select_strategy() {
     echo "Select a strategy to run:"
@@ -25,7 +25,7 @@ select_mode() {
                 startup_script="python backtest.py"
                 break
                 ;;
-            "Run Strategy")
+            "Live Strategy")
                 echo "You selected to run the strategy"
                 startup_script="python main.py"
                 break
