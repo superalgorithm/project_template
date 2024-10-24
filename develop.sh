@@ -88,7 +88,12 @@ watch_for_changes() {
 
 
 main() {
+    
   select_strategy
+
+  trap "stop_and_remove_container $strategy" EXIT
+  trap "stop_and_remove_container $strategy" SIGINT
+
   select_mode
   build_common
   build_image $strategy
