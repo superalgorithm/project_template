@@ -48,8 +48,8 @@ update_strategy() {
         docker build -t common_code_image:latest . &&
         cd / && cd $REMOTE_PATH/src/$strategy &&
         docker build -t $strategy . &&
-
-        if [ \$(docker ps -a -q -f name=^${strategy}\$) ]; then
+        
+        if [ \$(docker ps -a -q -f name=${strategy}\$) ]; then
             docker stop $strategy &&
             docker rm $strategy 2>/dev/null || echo "Container $strategy already removed"
         else
