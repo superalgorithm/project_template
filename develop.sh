@@ -45,13 +45,16 @@ stop_and_remove_container() {
         docker stop $strategy
     fi
 
-    docker rm $strategy
+    if [ "$(docker ps -aq --filter "name=$strategy")" ]; then
+        docker rm $strategy
+    fi
+
     docker image prune -f
 }
 
 build_common() {
   echo "Building common code image..."
-  docker build -t common_code_image:latest ./src/common
+  DOCKER_BUILDKIT=1 docker build -t common_code_image:latest ./src/common
 }
 
 build_image() {
@@ -60,8 +63,9 @@ build_image() {
     stop_and_remove_container $strategy
 
     echo "Building image for $strategy..."
+
+    DOCKER_BUILDKIT=1 docker build --rm -t $strategy ./src/$strategy
     
-    docker build --rm -t $strategy ./src/$strategy
     docker run -d -it --rm --name $strategy $strategy $startup_script
 
     docker logs -f $strategy &
@@ -75,20 +79,20 @@ watch_for_changes() {
     fswatch -o ./src/common | while read; do
         echo "Changes detected in common. Rebuilding common image..."
         build_common
+        build_image $strategy
     done &
 
-    fswatch -o ./src/ | while read f
+    fswatch -o -e ".*common.*" "./src/$strategy" | while read f
     do
       echo "Changes detected in $strategy. Rebuilding image..."
       kill $LOG_PID
       build_image $strategy
-      sleep 1
     done
 }
 
 
 main() {
-    
+
   select_strategy
 
   trap "stop_and_remove_container $strategy" EXIT
