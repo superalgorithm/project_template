@@ -15,11 +15,18 @@ An opinionated project template for building and testing trading strategies with
 
 - [Docker](https://www.docker.com/) running on both the development machine and the remote host
 - fswatch for watching folders and automatically re-building containers during development mode
+- yq for reading config.yaml settings
 
 Install fswatch using:
 
 ```
 brew install fswatch
+```
+
+Install yq using:
+
+```
+brew install yq
 ```
 
 ## Installation
@@ -73,6 +80,42 @@ Having a `requirements.txt` for each strategy allows you to lock dependencies in
 
 `backtest.py` is used to configure and run backtests.
 
+#### config.yaml
+
+Configure `strategy_settings` in your config.yaml to create a list of environment variables that can be set during deployment.
+
+Example config.yaml:
+
+```yaml
+
+---
+strategy_settings:
+  ticker: HMSTR/USDT:USDT
+  tick_size: 0.000001
+  trading_capital: 600
+  risk: 0.25
+  trade_mode: SHORT
+  etc: something
+```
+
+when you run `.deploy.sh` the script will ask you to provide values for any of the variables you set under `strategy_settings`, or keep the default values.
+
+You can then load these settings in your main.py:
+
+```python
+from superalgorithm.utils.config import config
+
+def get_setting(key):
+   # load from environtment if None load from yaml
+   return config.get(key) or config.get("strategy_settings", {}).get(key)
+
+ticker = get_setting("ticker")
+trading_capital = int(get_setting("trading_capital") or 0)
+
+...
+
+```
+
 ## ./develop.sh
 
 This script will:
@@ -123,3 +166,10 @@ docker logs -f <strategy_name>
 ```
 
 > **Attention:** Don't forget to manually upload any .env or config.yaml files your strategy may require to run.
+
+# Changelog
+
+## December 2024
+
+- Added support for dynamic container deployments by specifying `strategy_settings` in config.yaml.
+- Support for choosing container names to create multiple instances from the same image.

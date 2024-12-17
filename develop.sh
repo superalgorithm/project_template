@@ -1,7 +1,7 @@
 #!/bin/bash
 # chmod +x deploy.sh
 
-strategies=($(find src -maxdepth 1 -type d -not -name "src" -not -name "common" -not -name "__pycache__" -not -name "*.egg-info" -exec basename {} \;))
+strategies=($(find src -maxdepth 1 -type d -not -name "src" -not -name "common" -not -name "__pycache__" -not -name ".pytest_cache" -not -name "*.egg-info" -exec basename {} \;))
 
 select_strategy() {
     echo "Select a strategy to run:"
@@ -66,7 +66,7 @@ build_image() {
 
     DOCKER_BUILDKIT=1 docker build --rm -t $strategy ./src/$strategy
     
-    docker run -d -it --rm --name $strategy $strategy $startup_script
+    docker run -p 5678:5678 -d -it --rm --name $strategy -e SUPER_STRATEGY_ID=$strategy $strategy $startup_script
 
     docker logs -f $strategy &
     LOG_PID=$!
